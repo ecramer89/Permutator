@@ -30,6 +30,11 @@ public class Permutator implements Iterable<Object[]> {
 		 
 		 public void reset(){
 			 swap=start;
+			 
+		 }
+		 
+		 protected void updateData(Object[] data){
+			 copy=data.clone();
 		 }
 		
 		 
@@ -40,10 +45,10 @@ public class Permutator implements Iterable<Object[]> {
 			
 		 }
 
-	    protected void swap(Object[] array, int a, int b){
-	    	Object temp=array[a];
-	    	array[a]=array[b];
-	    	array[b]=temp;
+	    protected void swap(int a, int b){
+	    	Object temp=copy[a];
+	    	copy[a]=copy[b];
+	    	copy[b]=temp;
 	    }
 		
 	}
@@ -85,7 +90,7 @@ public class Permutator implements Iterable<Object[]> {
 			//we have generated all the permutations of lower+1, n, holding element at index 
 			if(!rest.hasNext()){
 				swap++;
-				swap(copy, swap, start);
+				swap(swap, start);
 				
 				rest=new PermutatorIteratorContainer(copy, start+1);
 			} 
