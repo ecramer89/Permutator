@@ -16,7 +16,7 @@ public class Permutator implements Iterable<Object[]> {
 	@Override
 	public Iterator<Object[]> iterator() {
 		if(iterator==null){
-			iterator = new PermutatorIteratorContainer();
+			iterator = new OuterPermutatorIteratorContainer();
 		} else if(!iterator.hasNext()){
 			iterator.reset();
 		}
@@ -52,33 +52,22 @@ public class Permutator implements Iterable<Object[]> {
 	    }
 		
 	}
-	public class PermutatorIteratorContainer extends PermutatorIterator {
-
-		
-		private PermutatorIterator rest;
-		
-		
-		public PermutatorIteratorContainer(){
-			this(original, 0);
-			
-		}
-		
-		private PermutatorIteratorContainer(Object[] copy, int start){
-			super(copy, start);
-			if(rest==null){
-				//first recursion
-				if(start<original.length-1){
-					rest=new PermutatorIteratorContainer(copy, start+1);
-				} else {
-					rest=new PermutatorIteratorBase(copy);
-				}
-				
-			
-			}
-		
-		}
-		
 	
+	
+	
+	public class PermutatorIteratorContainter extends PermutatorIterator{
+		protected PermutatorIterator rest;
+
+		protected PermutatorIteratorContainter(Object[] original, int lower) {
+			super(original, lower);
+			//first recursion
+			if(start<original.length-1){
+				rest=new PermutatorIteratorContainter(copy, start+1);
+			} else {
+				rest=new PermutatorIteratorBase(copy);
+			}
+		}
+
 		@Override
 		public boolean hasNext() {
 			return rest.hasNext() || swap<copy.length-1;
@@ -92,12 +81,12 @@ public class Permutator implements Iterable<Object[]> {
 				swap++;
 				swap(swap, start);
 				
-				rest=new PermutatorIteratorContainer(copy, start+1);
+				rest=new PermutatorIteratorContainter(copy, start+1);
 			} 
 			return rest.next();
 		
 		}
-
+		
 		@Override
 		public void reset() {
 			super.reset();
@@ -108,6 +97,19 @@ public class Permutator implements Iterable<Object[]> {
 		}
 		
 	}
+	
+	
+	public class OuterPermutatorIteratorContainer extends PermutatorIteratorContainter{
+
+		protected OuterPermutatorIteratorContainer() {
+			super(original, 0);
+		
+		}
+
+		
+		
+	}
+	
 	
 	
 	public class PermutatorIteratorBase extends PermutatorIterator {
