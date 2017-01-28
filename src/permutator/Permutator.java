@@ -2,109 +2,167 @@ package permutator;
 
 import java.util.Iterator;
 
-public class Permutator<T> implements Iterable {
+public class Permutator implements Iterable<Object[]> {
+
+	private Object[] original;
+	private Object[] permutation;
+	private PermutatorIterator iterator;
 
 	
-	private T[] original;
-
-	
-	public Permutator(T[] arr){
+	public Permutator(Object[] arr){
 		this.original=arr.clone();	
 	}
 
 	@Override
-	public Iterator iterator() {
-		return new RecursivePermutatorIterator();
+	public Iterator<Object[]> iterator() {
+		permutation=original.clone();
+		if(iterator==null){
+			iterator = new OuterPermutatorIteratorContainer();
+		} else if(!iterator.hasNext()){
+			iterator.reset();
+		}
+		return iterator;
 	}
 	
 	
-	
-	
-	public abstract class PermutatorIterator<T> implements Iterator{
-		 protected int swap, lower;
-		 protected T[] copy;
-		
+	public abstract class PermutatorIterator implements Iterator<Object[]>{
+		 protected int swap, start;
 		 
-		 protected PermutatorIterator(T[] original, int lower){
-			 this.copy=(T[]) original.clone();
+		 public void reset(){
+			 swap=start; 
+		 }
+		 
+
+		 protected PermutatorIterator(int lower){
 			 swap=lower;
-			 this.lower=lower;
+			 this.start=lower;
 			
 		 }
 
-	    protected void swap(T[] array, int a, int b){
-	    	T temp=array[a];
-	    	array[a]=array[b];
-	    	array[b]=temp;
+	    protected void swap(int a, int b){
+	    	Object temp=permutation[a];
+	    	permutation[a]=permutation[b];
+	    	permutation[b]=temp;
 	    }
+	    
+	    protected abstract void swapBack();
 		
 	}
-	public class RecursivePermutatorIterator extends PermutatorIterator {
+	
+	
+	
+	public class PermutatorIteratorContainter extends PermutatorIterator{
+		protected PermutatorIterator rest;
 
+		protected PermutatorIteratorContainter(int lower) {
+			super(lower);
+			//first recursion
+			if(start<permutation.length-1){
+				rest=new PermutatorIteratorContainter(start+1);
+			} else {
+				rest=new PermutatorIteratorBase();
+			}
+		}
+
+		@Override
+		public boolean hasNext() {
+			return rest.hasNext() || swap<permutation.length-1;
+		}
+
+		@Override
+		public Object[] next() {
+	
+			//we have generated all the permutations of lower+1, n, holding element at index 
+			advance(); 
+			return returnNext();
 		
-		private PermutatorIterator recursive;
-		
-		
-		public RecursivePermutatorIterator(){
-			super(original, 0);
-			
 		}
 		
-		private RecursivePermutatorIterator(T[] copy, int lower){
-			
-			super(copy, lower);
 		
+		protected Object[] returnNext(){
+			return rest.next();
+		}
+		
+		
+		@Override
+		protected void swapBack(){
+			rest.swapBack();
+			swap(start, swap);
 		}
 		
 	
-		@Override
-		public boolean hasNext() {
-			return recursive==null || recursive.hasNext() || swap<copy.length-1;
-		}
-
-		@Override
-		public T[] next() {
 		
-			if(recursive==null){
-				//first recursion
-				if(lower<original.length-1){
-					recursive=new RecursivePermutatorIterator((T[]) copy, lower+1);
-				} else {
-					recursive=new BasePermutatorIterator((T[]) copy);
-				}
+		protected void advance(){
+			//we have generated all the permutations of lower+1, n, holding element at index 
+			if(!rest.hasNext()){
+				rest.swapBack();
+				swap++;
+				swap(swap, start);
+				rest.reset();
+			} 
+		}
+		
+		
+		
+		@Override
+		public void reset() {
+			super.reset();
+			if(rest!=null){
+				rest.reset();
 			}
 			
-			//we have generated all the permutations of lower+1, n, holding element at index 
-			if(!recursive.hasNext()){
-				swap++;
-				swap(copy, swap, lower);
-				recursive=new RecursivePermutatorIterator((T[]) copy, lower+1);
-			} 
-			return (T[]) recursive.next();
-		
 		}
 		
 	}
 	
 	
-	public class BasePermutatorIterator extends PermutatorIterator {
+	public class OuterPermutatorIteratorContainer extends PermutatorIteratorContainter{
+
+		protected OuterPermutatorIteratorContainer() {
+			super(0);
+			
+		
+		}
+		
+	   @Override
+		protected Object[] returnNext(){
+		  return rest.next().clone();
+		}
+		
 
 		
-		public BasePermutatorIterator(T[] copy){
-			super(copy, copy.length-1);
+	}
+	
+	
+	
+	public class PermutatorIteratorBase extends PermutatorIterator {
+
+		
+		public PermutatorIteratorBase(){
+			super(permutation.length-1);
 			
 		}
 		
 		@Override
 		public boolean hasNext() {
-			return swap<copy.length;
+			return swap<permutation.length;
 		}
 
 		@Override
-		public T[] next() {
+		public Object[] next() {
 	        swap++;
-			return (T[]) copy;
+			return permutation;
 		}
+
+		@Override
+		protected void swapBack() {
+			swap--;
+	    	swap(swap, start);	
+		}
+		
+		
+	
+
 		
 	}
 	
