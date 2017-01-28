@@ -6,6 +6,7 @@ public class Permutator implements Iterable<Object[]> {
 
 	
 	private Object[] original;
+	private PermutatorIterator iterator;
 
 	
 	public Permutator(Object[] arr){
@@ -14,13 +15,22 @@ public class Permutator implements Iterable<Object[]> {
 
 	@Override
 	public Iterator<Object[]> iterator() {
-		return new RecursivePermutatorIterator();
+		if(iterator==null){
+			iterator = new RecursivePermutatorIterator();
+		} else if(!iterator.hasNext()){
+			iterator.reset();
+		}
+		return iterator;
 	}
 	
 	
 	public abstract class PermutatorIterator implements Iterator<Object[]>{
 		 protected int swap, start;
 		 protected Object[] copy;
+		 
+		 public void reset(){
+			 swap=start;
+		 }
 		
 		 
 		 protected PermutatorIterator(Object[] original, int lower){
@@ -79,6 +89,15 @@ public class Permutator implements Iterable<Object[]> {
 			return rest.next();
 		
 		}
+
+		@Override
+		public void reset() {
+			super.reset();
+			if(rest!=null){
+				rest.reset();
+			}
+			
+		}
 		
 	}
 	
@@ -101,6 +120,8 @@ public class Permutator implements Iterable<Object[]> {
 	        swap++;
 			return copy;
 		}
+
+
 		
 	}
 	
