@@ -7,7 +7,7 @@ public class Driver {
 	public static void main(String[] args) {
 
 		
-		p = new Permutator(new String[]{"a","b","c", "d"});
+		p = new Permutator(new String[]{"a","b","c", "d", "e"});
 		iterateOverAll();
 		System.out.println("next");
 		iterateOverAll();

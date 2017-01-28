@@ -4,17 +4,18 @@ import java.util.Iterator;
 
 public class Permutator implements Iterable<Object[]> {
 
-	
-	private Object[] data;
+	private Object[] original;
+	private Object[] permutation;
 	private PermutatorIterator iterator;
 
 	
 	public Permutator(Object[] arr){
-		this.data=arr.clone();	
+		this.original=arr.clone();	
 	}
 
 	@Override
 	public Iterator<Object[]> iterator() {
+		permutation=original.clone();
 		if(iterator==null){
 			iterator = new OuterPermutatorIteratorContainer();
 		} else if(!iterator.hasNext()){
@@ -26,15 +27,12 @@ public class Permutator implements Iterable<Object[]> {
 	
 	public abstract class PermutatorIterator implements Iterator<Object[]>{
 		 protected int swap, start;
-		 //protected Object[] copy;
 		 
 		 public void reset(){
-			 swap=start;
-			 
+			 swap=start; 
 		 }
 		 
-		
-		 
+
 		 protected PermutatorIterator(int lower){
 			 swap=lower;
 			 this.start=lower;
@@ -42,10 +40,12 @@ public class Permutator implements Iterable<Object[]> {
 		 }
 
 	    protected void swap(int a, int b){
-	    	Object temp=data[a];
-	    	data[a]=data[b];
-	    	data[b]=temp;
+	    	Object temp=permutation[a];
+	    	permutation[a]=permutation[b];
+	    	permutation[b]=temp;
 	    }
+	    
+	    protected abstract void swapBack();
 		
 	}
 	
@@ -57,7 +57,7 @@ public class Permutator implements Iterable<Object[]> {
 		protected PermutatorIteratorContainter(int lower) {
 			super(lower);
 			//first recursion
-			if(start<data.length-1){
+			if(start<permutation.length-1){
 				rest=new PermutatorIteratorContainter(start+1);
 			} else {
 				rest=new PermutatorIteratorBase();
@@ -66,7 +66,7 @@ public class Permutator implements Iterable<Object[]> {
 
 		@Override
 		public boolean hasNext() {
-			return rest.hasNext() || swap<data.length-1;
+			return rest.hasNext() || swap<permutation.length-1;
 		}
 
 		@Override
@@ -78,17 +78,27 @@ public class Permutator implements Iterable<Object[]> {
 		
 		}
 		
+		
 		protected Object[] returnNext(){
 			return rest.next();
 		}
 		
+		
+		@Override
+		protected void swapBack(){
+			rest.swapBack();
+			swap(start, swap);
+		}
+		
+	
+		
 		protected void advance(){
 			//we have generated all the permutations of lower+1, n, holding element at index 
 			if(!rest.hasNext()){
+				rest.swapBack();
 				swap++;
 				swap(swap, start);
-				
-				rest=new PermutatorIteratorContainter(start+1);
+				rest.reset();
 			} 
 		}
 		
@@ -110,13 +120,16 @@ public class Permutator implements Iterable<Object[]> {
 
 		protected OuterPermutatorIteratorContainer() {
 			super(0);
+			
 		
 		}
-
-		@Override
+		
+	   @Override
 		protected Object[] returnNext(){
-			return rest.next().clone();
+		  return rest.next().clone();
 		}
+		
+
 		
 	}
 	
@@ -126,21 +139,29 @@ public class Permutator implements Iterable<Object[]> {
 
 		
 		public PermutatorIteratorBase(){
-			super(data.length-1);
+			super(permutation.length-1);
 			
 		}
 		
 		@Override
 		public boolean hasNext() {
-			return swap<data.length;
+			return swap<permutation.length;
 		}
 
 		@Override
 		public Object[] next() {
 	        swap++;
-			return data;
+			return permutation;
 		}
 
+		@Override
+		protected void swapBack() {
+			swap--;
+	    	swap(swap, start);	
+		}
+		
+		
+	
 
 		
 	}
