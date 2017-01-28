@@ -16,7 +16,7 @@ public class Permutator implements Iterable<Object[]> {
 	@Override
 	public Iterator<Object[]> iterator() {
 		if(iterator==null){
-			iterator = new RecursivePermutatorIterator();
+			iterator = new PermutatorIteratorContainer();
 		} else if(!iterator.hasNext()){
 			iterator.reset();
 		}
@@ -47,26 +47,28 @@ public class Permutator implements Iterable<Object[]> {
 	    }
 		
 	}
-	public class RecursivePermutatorIterator extends PermutatorIterator {
+	public class PermutatorIteratorContainer extends PermutatorIterator {
 
 		
 		private PermutatorIterator rest;
 		
 		
-		public RecursivePermutatorIterator(){
+		public PermutatorIteratorContainer(){
 			this(original, 0);
 			
 		}
 		
-		private RecursivePermutatorIterator(Object[] copy, int lower){
-			super(copy, lower);
+		private PermutatorIteratorContainer(Object[] copy, int start){
+			super(copy, start);
 			if(rest==null){
 				//first recursion
-				if(lower<original.length-1){
-					rest=new RecursivePermutatorIterator(copy, lower+1);
+				if(start<original.length-1){
+					rest=new PermutatorIteratorContainer(copy, start+1);
 				} else {
-					rest=new BasePermutatorIterator(copy);
+					rest=new PermutatorIteratorBase(copy);
 				}
+				
+			
 			}
 		
 		}
@@ -84,7 +86,8 @@ public class Permutator implements Iterable<Object[]> {
 			if(!rest.hasNext()){
 				swap++;
 				swap(copy, swap, start);
-				rest=new RecursivePermutatorIterator(copy, start+1);
+				
+				rest=new PermutatorIteratorContainer(copy, start+1);
 			} 
 			return rest.next();
 		
@@ -102,10 +105,10 @@ public class Permutator implements Iterable<Object[]> {
 	}
 	
 	
-	public class BasePermutatorIterator extends PermutatorIterator {
+	public class PermutatorIteratorBase extends PermutatorIterator {
 
 		
-		public BasePermutatorIterator(Object[] copy){
+		public PermutatorIteratorBase(Object[] copy){
 			super(copy, copy.length-1);
 			
 		}
